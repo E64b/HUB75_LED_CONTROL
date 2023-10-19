@@ -29,13 +29,13 @@
  */
 
 
-#include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
-#include <FastLED.h>
+#include <\lib\HUB75\src\HUB75.h>
+#include <\lib\FastLED\src\FastLED.h>
 
  // Configure for your panel(s) as appropriate!
 #define PANEL_WIDTH 16
 #define PANEL_HEIGHT 16 	// Panel height of 64 will required PIN_E to be defined.
-#define PANELS_NUMBER 2 	// Number of chained panels, if just a single panel, obviously set to 1
+#define PANELS_NUMBER 5 	// Number of chained panels, if just a single panel, obviously set to 1
 #define PIN_E 32
 
 #define PANE_WIDTH PANEL_WIDTH * PANELS_NUMBER
@@ -178,4 +178,4 @@ void loop(){
         fps_timer=millis();
         fps=0;
         }
-    } // end loop
+    } 
