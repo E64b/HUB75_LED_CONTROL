@@ -29,8 +29,8 @@
  */
 
 
-#include <\lib\HUB75\src\HUB75.h>
-#include <\lib\FastLED\src\FastLED.h>
+#include "lib\HUB75\src\HUB75.h"
+#include "lib\FastLED\src\FastLED.h"
 
  // Configure for your panel(s) as appropriate!
 #define PANEL_WIDTH 16
