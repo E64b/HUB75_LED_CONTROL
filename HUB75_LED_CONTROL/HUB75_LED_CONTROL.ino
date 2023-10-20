@@ -1,49 +1,10 @@
-﻿ // HUB75E pinout
- // R1 | G1
- // B1 | GND
- // R2 | G2
- // B2 | E
- //  A | B
- //  C | D
- // CLK| LAT
- // OE | GND
+﻿
 
- /*  Default library pin configuration for the reference
-   you can redefine only ones you need later on object creation
-
- #define R1 25
- #define G1 26
- #define BL1 27
- #define R2 14
- #define G2 12
- #define BL2 13
- #define CH_A 23
- #define CH_B 19
- #define CH_C 5
- #define CH_D 17
- #define CH_E -1 // assign to any available pin if using two panels or 64x64 panels with 1/32 scan
- #define CLK 16
- #define LAT 4
- #define OE 15
-
- */
-
-
-#include "lib\HUB75\src\HUB75.h"
+#include "lib\HUB75\src\ESP32-HUB75-MatrixPanel-DMA.h"
 #include "lib\FastLED\src\FastLED.h"
 
- // Configure for your panel(s) as appropriate!
-#define PANEL_WIDTH 16
-#define PANEL_HEIGHT 16 	// Panel height of 64 will required PIN_E to be defined.
-#define PANELS_NUMBER 5 	// Number of chained panels, if just a single panel, obviously set to 1
-#define PIN_E 32
-
-#define PANE_WIDTH PANEL_WIDTH * PANELS_NUMBER
-#define PANE_HEIGHT PANEL_HEIGHT
-
-
-// placeholder for the matrix object
-MatrixPanel_I2S_DMA* dma_display=nullptr;
+ // placeholder for the matrix object
+MatrixPanel_DMA* dma_display=nullptr;
 
 
 uint16_t time_counter=0, cycles=0, fps=0;
@@ -63,80 +24,93 @@ void setup(){
     Serial.begin(115200);
 
     Serial.println(F("*****************************************************"));
-    Serial.println(F("*        ESP32-HUB75-MatrixPanel-I2S-DMA DEMO       *"));
+    Serial.println(F("*        ESP32-HUB75-MatrixPanel-DMA DEMO           *"));
     Serial.println(F("*****************************************************"));
 
-    /*
-      The configuration for MatrixPanel_I2S_DMA object is held in HUB75_I2S_CFG structure,
-      pls refer to the lib header file for full details.
-      All options has it's predefined default values. So we can create a new structure and redefine only the options we need
+    #define PANEL_WIDTH 16
+    #define PANEL_HEIGHT 16
+    #define PANEL_WIDTH_CNT 3
+    #define PANEL_HEIGHT_CNT 1
+    #define PANE_WIDTH PANEL_WIDTH*PANEL_WIDTH_CNT
+    #define PANE_HEIGHT PANEL_HEIGHT*PANEL_HEIGHT_CNT
 
-      // those are the defaults
-      mxconfig.mx_width = 64;                   // physical width of a single matrix panel module (in pixels, usually it is always 64 ;) )
-      mxconfig.mx_height = 32;                  // physical height of a single matrix panel module (in pixels, usually almost always it is either 32 or 64)
-      mxconfig.chain_length = 1;                // number of chained panels regardless of the topology, default 1 - a single matrix module
-      mxconfig.gpio.r1 = R1;                    // pin mappings
-      mxconfig.gpio.g1 = G1;
-      mxconfig.gpio.b1 = B1;                    // etc
-      mxconfig.driver = HUB75_I2S_CFG::SHIFT;   // shift reg driver, default is plain shift register
-      mxconfig.double_buff = false;             // use double buffer (twice amount of RAM required)
-      mxconfig.i2sspeed = HUB75_I2S_CFG::HZ_10M;// I2S clock speed, better leave as-is unless you want to experiment
-    */
-
-    /*
-      For example we have two 64x64 panels chained, so we need to customize our setup like this
-
-    */
-    HUB75_I2S_CFG mxconfig;
-    mxconfig.mx_height=PANEL_HEIGHT;      // we have 64 pix heigh panels
-    mxconfig.chain_length=PANELS_NUMBER;  // we have 2 panels chained
-    mxconfig.gpio.e=PIN_E;                // we MUST assign pin e to some free pin on a board to drive 64 pix height panels with 1/32 scan
-    //mxconfig.driver = HUB75_I2S_CFG::FM6126A;     // in case that we use panels based on FM6126A chip, we can change that
-
-    /*
-      //Another way of creating config structure
-      //Custom pin mapping for all pins
-      HUB75_I2S_CFG::i2s_pins _pins={R1, G1, BL1, R2, G2, BL2, CH_A, CH_B, CH_C, CH_D, CH_E, LAT, OE, CLK};
-      HUB75_I2S_CFG mxconfig(
-                              64,   // width
-                              64,   // height
-                               4,   // chain length
-                           _pins,   // pin mapping
-        HUB75_I2S_CFG::FM6126A      // driver chip
-      );
-
-    */
-
+    hub75_cfg_t mxconfig={
+        .mx_width=PANEL_WIDTH,
+        .mx_height=PANEL_HEIGHT,
+        .mx_count_width=PANEL_WIDTH_CNT,
+        .mx_count_height=PANEL_HEIGHT_CNT,
+        .gpio={
+        .r1=R1_PIN,
+        .g1=G1_PIN,
+        .b1=B1_PIN,
+        .r2=R2_PIN,
+        .g2=G2_PIN,
+        .b2=B2_PIN,
+        .a=A_PIN,
+        .b=B_PIN,
+        .c=C_PIN,
+        .d=D_PIN,
+        .e=E_PIN,
+        .lat=LAT_PIN,
+        .oe=OE_PIN,
+        .clk=CLK_PIN,
+        },
+        .driver=ICN2053,
+        .clk_freq=HZ_13M,
+        .clk_phase=CLK_POZITIVE,
+        .color_depth=COLORx16,//PIXEL_COLOR_DEPTH
+        .double_buff=DOUBLE_BUFF_ON,
+        .double_dma_buff=DOUBLE_BUFF_ON,
+        .decoder_INT595=false,
+        };
 
     // OK, now we can create our matrix object
-    dma_display=new MatrixPanel_I2S_DMA(mxconfig);
+    // if mx_count_height > 1 - auto use 
+    // virtual panel uses additional parameter:
+    // VIRTUAL_S_TOP_DOWN - serpantine from top down (default, may be skipped)
+    // VIRTUAL_S_BOTTOM_UP - serpantine from bottom up
+    // VIRTUAL_TOP_DOWN - unidirectional from top down
+    // VIRTUAL_BOTTOM_UP - unidirectional from bottom up
+    //dma_display = new MatrixPanel_DMA(mxconfig, VIRTUAL_S_TOP_DOWN);
+    dma_display=new MatrixPanel_DMA(mxconfig);
 
-    // let's adjust default brightness to about 75%
-    dma_display->setBrightness8(192);    // range is 0-255, 0 - 0%, 255 - 100%
 
     // Allocate memory and start DMA display
     if(not dma_display->begin())
         Serial.println("****** !KABOOM! I2S memory allocation failed ***********");
 
+    // let's adjust default brightness to about 75%
+    dma_display->setBrightness8(192);    // range is 0-255, 0 - 0%, 255 - 100%
+    //set rotate for new drawing
+    //dma_display->setRotate(ROTATE_90); //ROTATE_0, ROTATE_90, ROTATE_180, ROTATE_270
+    //set mirror for new drawing
+    //dma_display->setMirrorX(true);
+    //dma_display->setMirrorY(true);
+
     // well, hope we are OK, let's draw some colors first :)
     Serial.println("Fill screen: RED");
     dma_display->fillScreenRGB888(255, 0, 0);
+    dma_display->flipDMABuffer();
     delay(1000);
 
     Serial.println("Fill screen: GREEN");
     dma_display->fillScreenRGB888(0, 255, 0);
+    dma_display->flipDMABuffer();
     delay(1000);
 
     Serial.println("Fill screen: BLUE");
     dma_display->fillScreenRGB888(0, 0, 255);
+    dma_display->flipDMABuffer();
     delay(1000);
 
     Serial.println("Fill screen: Neutral White");
     dma_display->fillScreenRGB888(64, 64, 64);
+    dma_display->flipDMABuffer();
     delay(1000);
 
     Serial.println("Fill screen: black");
     dma_display->fillScreenRGB888(0, 0, 0);
+    dma_display->flipDMABuffer();
     delay(1000);
 
 
@@ -160,6 +134,7 @@ void loop(){
             dma_display->drawPixelRGB888(x, y, currentColor.r, currentColor.g, currentColor.b);
             }
         }
+    dma_display->flipDMABuffer();
 
     ++time_counter;
     ++cycles;
@@ -178,4 +153,4 @@ void loop(){
         fps_timer=millis();
         fps=0;
         }
-    } 
+    } // end loop

@@ -1,7 +1,13 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\HUB75_LED_CONTROL",
+    "\\HUB75_LED_CONTROL\\lib",
+    "\\HUB75_LED_CONTROL\\lib\\FastLED",
+    "\\HUB75_LED_CONTROL\\lib\\FastLED\\src",
+    "\\HUB75_LED_CONTROL\\lib\\HUB75",
+    "\\HUB75_LED_CONTROL\\lib\\HUB75\\src"
   ],
-  "SelectedNode": "\\C:\\Users\\Михаил\\source\\repos\\HUB75_LED_CONTROL",
+  "SelectedNode": "\\HUB75_LED_CONTROL\\lib\\FastLED\\src\\FastLED.h",
   "PreviewInSolutionExplorer": false
 }
