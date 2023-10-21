@@ -2,11 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\HUB75_LED_CONTROL",
-    "\\HUB75_LED_CONTROL\\lib",
-    "\\HUB75_LED_CONTROL\\lib\\FastLED",
-    "\\HUB75_LED_CONTROL\\lib\\HUB75",
     "\\HUB75_LED_CONTROL\\lib\\HUB75\\src"
   ],
-  "SelectedNode": "\\HUB75_LED_CONTROL\\HUB75_LED_CONTROL.ino",
+  "SelectedNode": "\\HUB75_LED_CONTROL\\example",
   "PreviewInSolutionExplorer": false
 }
